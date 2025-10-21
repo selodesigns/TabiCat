@@ -43,3 +43,4 @@ Issues and pull requests are welcome. Whether you want new prompt packs, better 
 ---
 
 **SELOdev** · Building local-first tools that make your workflow smarter without surrendering control.
+www.selodev.com
