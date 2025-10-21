@@ -1,0 +1,210 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  --background: #0f1b2b;
+  --foreground: #f1f5f9;
+  --muted: rgba(148, 163, 184, 0.18);
+  --muted-foreground: #94a3b8;
+  --accent: #38bdf8;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.app__header {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--muted);
+}
+
+.app__conversation {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+
+.message {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 0.75rem;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.message--assistant {
+  background: rgba(56, 189, 248, 0.12);
+}
+
+.message__role {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.app__composer {
+  border-top: 1px solid var(--muted);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.templates {
+  border: 1px solid var(--muted);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(148, 163, 184, 0.06);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.templates__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.templates__header button {
+  font-size: 0.75rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--muted);
+  background: rgba(148, 163, 184, 0.15);
+  color: inherit;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+
+.templates__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.templates__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted-foreground);
+}
+
+.template {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.template__apply,
+.template__delete {
+  border-radius: 0.5rem;
+  border: 1px solid var(--muted);
+  background: rgba(148, 163, 184, 0.15);
+  color: inherit;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+}
+
+.template__apply {
+  font-size: 0.85rem;
+}
+
+.template__delete {
+  font-size: 0.9rem;
+  line-height: 1;
+  width: 1.8rem;
+  text-align: center;
+}
+
+.model-controls {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex: 1;
+}
+
+.model-controls select {
+  flex: 1;
+}
+
+.model-controls button {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--muted);
+  background: rgba(148, 163, 184, 0.15);
+  color: inherit;
+  cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.app__composer textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 3rem;
+  max-height: 12rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--muted);
+  background: rgba(15, 27, 43, 0.4);
+  color: inherit;
+}
+
+.app__composer textarea:focus {
+  outline: 2px solid var(--accent);
+}
+
+.composer__controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.composer__controls select,
+.composer__controls button {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--muted);
+  background: rgba(148, 163, 184, 0.15);
+  color: inherit;
+}
+
+.composer__controls button {
+  font-weight: 600;
+  background: var(--accent);
+  color: #02121f;
+  border: none;
+  cursor: pointer;
+}
+
+.composer__controls button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

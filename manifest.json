@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "TabiCat",
+  "version": "0.1.0",
+  "description": "Chat with your local Ollama model using the TabiCat side panel chatbot.",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://localhost:11434/*",
+    "https://localhost:11434/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "TabiCat"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  }
+}
