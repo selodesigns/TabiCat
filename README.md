@@ -34,7 +34,7 @@ TabiCat is a Chrome side panel extension from SELOdev that keeps AI assistance i
 
 ## Branding & Sharing
 
-Share TabiCat freely with friends who want a SELOdev-branded, privacy-respecting AI companion. Because it relies on your own hardware, there are no monthly subscription costs and no third-party servers in the loop.
+Share TabiCat freely with friends who want a free, local, privacy-respecting AI Browser integration. Because it relies on your own hardware, there are no monthly subscription costs and no third-party servers in the loop.
 
 ## Contributing
 
