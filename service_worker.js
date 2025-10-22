@@ -38,12 +38,7 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 chrome.action.onClicked.addListener(async tab => {
   await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
-  const panelOptions = await chrome.sidePanel.getOptions({ tabId: tab.id });
-  if (panelOptions?.openPanelOnActionClick) {
-    await chrome.sidePanel.close({ tabId: tab.id });
-  } else {
-    await chrome.sidePanel.open({ windowId: tab.windowId });
-  }
+  await chrome.sidePanel.open({ windowId: tab.windowId });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
