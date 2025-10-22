@@ -1,5 +1,7 @@
 # TabiCat by SELOdev
 
+-![TabiCat Icon](./tabicat-icon.png)
+
 TabiCat is a Chrome side panel extension from SELOdev that keeps AI assistance in your workflow without recurring SaaS fees. Pair it with a locally hosted Ollama model to get instant responses, prompt templates, and model profiles directly beside any page.
 
 ## Features
