@@ -8,6 +8,7 @@ const addTemplateButton = document.getElementById("addTemplate");
 const manageProfilesButton = document.getElementById("manageProfiles");
 const connectionStatus = document.getElementById("connectionStatus");
 const testConnectionButton = document.getElementById("testConnection");
+const closePanelButton = document.getElementById("closePanel");
 
 const DEFAULT_TEMPLATES = [
   {
@@ -58,6 +59,7 @@ function attachEventListeners() {
   manageProfilesButton.addEventListener("click", handleManageProfiles);
   modelSelect.addEventListener("change", handleProfileChange);
   testConnectionButton.addEventListener("click", handleTestConnection);
+  closePanelButton.addEventListener("click", handleClosePanel);
 
   chrome.runtime.onMessage.addListener(message => {
     if (message?.type === "context-selection" && message.text) {
@@ -688,5 +690,11 @@ function saveTemplates() {
 function saveProfiles() {
   chrome.storage.sync.set({ profiles, currentProfileId }).catch(error => {
     console.error("Failed to save profiles", error);
+  });
+}
+
+function handleClosePanel() {
+  chrome.sidePanel.close().catch(error => {
+    console.error("Failed to close side panel", error);
   });
 }
