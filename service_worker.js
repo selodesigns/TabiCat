@@ -37,8 +37,15 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 chrome.action.onClicked.addListener(async tab => {
-  await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
-  await chrome.sidePanel.open({ windowId: tab.windowId });
+  try {
+    console.log("Extension icon clicked, tab:", tab);
+    await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
+    console.log("Side panel options set");
+    await chrome.sidePanel.open({ windowId: tab.windowId });
+    console.log("Side panel opened");
+  } catch (error) {
+    console.error("Failed to open side panel:", error);
+  }
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
