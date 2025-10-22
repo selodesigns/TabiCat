@@ -6,7 +6,8 @@
   "permissions": [
     "storage",
     "sidePanel",
-    "contextMenus"
+    "contextMenus",
+    "declarativeNetRequest"
   ],
   "host_permissions": [
     "http://localhost:11434/*",

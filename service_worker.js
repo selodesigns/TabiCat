@@ -1,4 +1,5 @@
 const CONTEXT_MENU_ID = "ollama-sidepanel-selection";
+const REMOVE_ORIGIN_RULE_ID = 1;
 
 chrome.runtime.onInstalled.addListener(async () => {
   await chrome.sidePanel.setOptions({ path: "sidepanel.html", enabled: true });
@@ -9,6 +10,29 @@ chrome.runtime.onInstalled.addListener(async () => {
     id: CONTEXT_MENU_ID,
     title: 'Ask TabiCat about "%s"',
     contexts: ["selection"]
+  });
+
+  await chrome.declarativeNetRequest.updateDynamicRules({
+    removeRuleIds: [REMOVE_ORIGIN_RULE_ID],
+    addRules: [
+      {
+        id: REMOVE_ORIGIN_RULE_ID,
+        priority: 1,
+        action: {
+          type: "modifyHeaders",
+          requestHeaders: [
+            {
+              header: "origin",
+              operation: "remove"
+            }
+          ]
+        },
+        condition: {
+          urlFilter: "||localhost:11434",
+          resourceTypes: ["xmlhttprequest"]
+        }
+      }
+    ]
   });
 });
 
