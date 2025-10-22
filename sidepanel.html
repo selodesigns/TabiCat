@@ -8,7 +8,15 @@
 </head>
 <body>
   <div class="app">
-    <header class="app__header">TabiCat</header>
+    <header class="app__header">
+      <div class="header__content">
+        <span>TabiCat</span>
+        <div class="connection-status">
+          <span id="connectionStatus" class="status-indicator status-indicator--checking"></span>
+          <button type="button" id="testConnection" class="test-button" title="Test Ollama connection">Test</button>
+        </div>
+      </div>
+    </header>
     <main class="app__conversation" id="conversation"></main>
     <form class="app__composer" id="composer">
       <div class="templates" id="templates">

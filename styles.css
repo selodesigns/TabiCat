@@ -33,6 +33,69 @@ body {
   border-bottom: 1px solid var(--muted);
 }
 
+.header__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.status-indicator--checking {
+  background: #f59e0b;
+  animation: pulse 1.5s infinite;
+}
+
+.status-indicator--connected {
+  background: #10b981;
+}
+
+.status-indicator--error {
+  background: #ef4444;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.test-button {
+  font-size: 0.75rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--muted);
+  background: rgba(148, 163, 184, 0.15);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.test-button:hover {
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.test-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .app__conversation {
   flex: 1;
   padding: 1rem;

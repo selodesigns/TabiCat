@@ -6,6 +6,8 @@ const sendButton = document.getElementById("send");
 const templateList = document.getElementById("templateList");
 const addTemplateButton = document.getElementById("addTemplate");
 const manageProfilesButton = document.getElementById("manageProfiles");
+const connectionStatus = document.getElementById("connectionStatus");
+const testConnectionButton = document.getElementById("testConnection");
 
 const DEFAULT_TEMPLATES = [
   {
@@ -53,6 +55,7 @@ async function init() {
   renderProfiles();
   renderConversation();
   attachEventListeners();
+  checkConnectionStatus();
   if (!promptInput.value) {
     promptInput.focus();
   }
@@ -64,6 +67,7 @@ function attachEventListeners() {
   templateList.addEventListener("click", handleTemplateListClick);
   manageProfilesButton.addEventListener("click", handleManageProfiles);
   modelSelect.addEventListener("change", handleProfileChange);
+  testConnectionButton.addEventListener("click", handleTestConnection);
 
   chrome.runtime.onMessage.addListener(message => {
     if (message?.type === "context-selection" && message.text) {
@@ -123,7 +127,7 @@ function appendMessageElement(role, content) {
 
   const roleEl = document.createElement("span");
   roleEl.className = "message__role";
-  roleEl.textContent = role === "assistant" ? "Ollama" : "You";
+  roleEl.textContent = role === "assistant" ? "TabiCat" : "You";
 
   const contentEl = document.createElement("div");
   contentEl.className = "message__content";
@@ -385,6 +389,35 @@ async function queryOllama(prompt, profile, assistantIndex) {
   }
 
   return assistantMessage;
+}
+
+async function checkConnectionStatus() {
+  updateConnectionStatus("checking");
+  try {
+    const response = await fetch("http://localhost:11434/api/tags", {
+      method: "GET",
+      signal: AbortSignal.timeout(3000)
+    });
+    if (response.ok) {
+      updateConnectionStatus("connected");
+    } else {
+      updateConnectionStatus("error");
+    }
+  } catch (error) {
+    console.error("Connection check failed", error);
+    updateConnectionStatus("error");
+  }
+}
+
+function updateConnectionStatus(status) {
+  connectionStatus.className = `status-indicator status-indicator--${status}`;
+  testConnectionButton.title = status === "connected" ? "Connected to Ollama" : status === "error" ? "Failed to connect" : "Checking connection...";
+}
+
+async function handleTestConnection() {
+  testConnectionButton.disabled = true;
+  await checkConnectionStatus();
+  testConnectionButton.disabled = false;
 }
 
 function saveConversation() {
