@@ -36,16 +36,16 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 });
 
-chrome.action.onClicked.addListener(async tab => {
-  try {
-    console.log("Extension icon clicked, tab:", tab);
-    await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
-    console.log("Side panel options set");
-    await chrome.sidePanel.open({ windowId: tab.windowId });
-    console.log("Side panel opened");
-  } catch (error) {
-    console.error("Failed to open side panel:", error);
-  }
+chrome.action.onClicked.addListener(tab => {
+  chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true }, () => {
+    chrome.sidePanel.open({ tabId: tab.id }, () => {
+      if (chrome.runtime.lastError) {
+        console.error("Failed to open side panel:", chrome.runtime.lastError);
+      } else {
+        console.log("Side panel opened successfully");
+      }
+    });
+  });
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
