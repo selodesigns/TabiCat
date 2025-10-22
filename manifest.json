@@ -21,24 +21,12 @@
   },
   "action": {
     "default_title": "TabiCat",
-    "default_icon": {
-      "16": "tabicat-icon-16.png",
-      "32": "tabicat-icon-32.png",
-      "48": "tabicat-icon-48.png",
-      "64": "tabicat-icon-64.png",
-      "128": "tabicat-icon-128.png",
-      "256": "tabicat-icon-256.png"
-    }
+    "default_icon": "tabicat-icon.svg"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
   },
   "icons": {
-    "16": "tabicat-icon-16.png",
-    "32": "tabicat-icon-32.png",
-    "48": "tabicat-icon-48.png",
-    "64": "tabicat-icon-64.png",
-    "128": "tabicat-icon-128.png",
-    "256": "tabicat-icon-256.png"
+    "128": "tabicat-icon.svg"
   }
 }
