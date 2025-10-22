@@ -205,6 +205,9 @@ body {
 
 .model-controls select {
   flex: 1;
+  background: rgba(15, 27, 43, 0.6);
+  color: var(--foreground);
+  border: 1px solid var(--muted);
 }
 
 .model-controls button {
@@ -257,6 +260,16 @@ body {
   border: 1px solid var(--muted);
   background: rgba(148, 163, 184, 0.15);
   color: inherit;
+}
+
+.composer__controls select {
+  background: rgba(15, 27, 43, 0.6);
+  color: var(--foreground);
+}
+
+select option {
+  background: #0f1b2b;
+  color: #f1f5f9;
 }
 
 .composer__controls button {
