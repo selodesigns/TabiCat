@@ -29,6 +29,7 @@ const DEFAULT_TEMPLATES = [
 
 const DEFAULT_PROFILES = [];
 const AUTO_PROFILE_PREFIX = "profile-model-";
+const MAX_CONTEXT_CHARS = 4000;
 
 let conversation = [];
 let templates = [];
@@ -60,10 +61,13 @@ function attachEventListeners() {
 
   chrome.runtime.onMessage.addListener(message => {
     if (message?.type === "context-selection" && message.text) {
-      promptInput.value = message.text;
-      promptInput.focus();
+      consumePendingPrompt(message.text).catch(error => {
+        console.error("Failed to consume context selection", error);
+      });
     }
   });
+
+  chrome.storage.onChanged.addListener(handleStorageChange);
 }
 
 async function loadState() {
@@ -90,10 +94,7 @@ async function loadState() {
       ? storedProfileId
       : profiles[0]?.id ?? null;
 
-    if (pendingPrompt) {
-      promptInput.value = pendingPrompt;
-      await chrome.storage.local.remove("pendingPrompt");
-    }
+    await consumePendingPrompt(pendingPrompt);
   } catch (error) {
     console.error("Failed to load state", error);
     conversation = [];
@@ -333,6 +334,95 @@ function getCurrentProfile() {
   };
 }
 
+async function consumePendingPrompt(pending) {
+  if (typeof pending !== "string" || !pending.trim()) {
+    return;
+  }
+  promptInput.value = pending;
+  promptInput.focus();
+  try {
+    await chrome.storage.local.remove("pendingPrompt");
+  } catch (error) {
+    console.error("Failed to clear pending prompt", error);
+  }
+}
+
+function handleStorageChange(changes, areaName) {
+  if (areaName !== "local" || !changes.pendingPrompt) {
+    return;
+  }
+  const newValue = changes.pendingPrompt.newValue;
+  consumePendingPrompt(newValue).catch(error => {
+    console.error("Failed to consume pending prompt", error);
+  });
+}
+
+function mergePromptWithContext(prompt, context) {
+  if (!context) {
+    return prompt;
+  }
+  return `${prompt}\n\n---\nPage context:\n${context}`;
+}
+
+async function capturePageContext() {
+  try {
+    const tab = await getActiveTab();
+    if (!tab?.id) {
+      return null;
+    }
+
+    const [injection] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const title = document.title ?? "";
+        const url = location.href ?? "";
+        const bodyText = document.body ? document.body.innerText ?? "" : "";
+        return {
+          title,
+          url,
+          bodyText
+        };
+      }
+    });
+
+    if (!injection?.result) {
+      return null;
+    }
+
+    const { title, url, bodyText } = injection.result;
+    const sections = [];
+    if (title) {
+      sections.push(`Title: ${title}`);
+    }
+    if (url) {
+      sections.push(`URL: ${url}`);
+    }
+    if (bodyText) {
+      sections.push(bodyText.trim());
+    }
+
+    if (!sections.length) {
+      return null;
+    }
+
+    const combined = sections.join("\n\n");
+    return combined.slice(0, MAX_CONTEXT_CHARS);
+  } catch (error) {
+    console.error("Failed to capture page context", error);
+    return null;
+  }
+}
+
+async function getActiveTab() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    return tab ?? null;
+  } catch (error) {
+    console.error("Failed to get active tab", error);
+    return null;
+  }
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
   const prompt = promptInput.value.trim();
@@ -341,6 +431,9 @@ async function handleSubmit(event) {
   }
 
   const profile = getCurrentProfile();
+  const pageContext = await capturePageContext();
+  const finalPrompt = mergePromptWithContext(prompt, pageContext);
+
   const userIndex = addMessage("user", prompt);
   const assistantIndex = addMessage("assistant", "...");
 
@@ -350,7 +443,7 @@ async function handleSubmit(event) {
   sendButton.disabled = true;
 
   try {
-    const assistantMessage = await queryOllama(prompt, profile, assistantIndex);
+    const assistantMessage = await queryOllama(finalPrompt, profile, assistantIndex);
     updateMessage(assistantIndex, assistantMessage);
   } catch (error) {
     console.error(error);

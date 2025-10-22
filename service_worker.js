@@ -42,20 +42,38 @@ chrome.action.onClicked.addListener(async tab => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId !== CONTEXT_MENU_ID || !info.selectionText) {
+  if (info.menuItemId !== CONTEXT_MENU_ID || !info?.selectionText?.trim()) {
     return;
   }
 
-  await chrome.storage.local.set({ pendingPrompt: info.selectionText });
+  const selectedText = info.selectionText.trim();
+
+  try {
+    await chrome.storage.local.set({ pendingPrompt: selectedText });
+  } catch (error) {
+    console.error("Failed to store pending prompt", error);
+  }
 
   if (tab?.id !== undefined) {
-    await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
-    if (tab.windowId !== undefined) {
-      await chrome.sidePanel.open({ windowId: tab.windowId });
+    try {
+      await chrome.sidePanel.setOptions({ tabId: tab.id, path: "sidepanel.html", enabled: true });
+      if (tab.windowId !== undefined) {
+        await chrome.sidePanel.open({ windowId: tab.windowId });
+      }
+    } catch (error) {
+      console.error("Failed to open side panel", error);
+    }
+
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: "tabicat-selection", text: selectedText });
+    } catch (error) {
+      console.error("Failed to send selection to tab", error);
     }
   }
 
   try {
-    await chrome.runtime.sendMessage({ type: "context-selection", text: info.selectionText });
-  } catch (error) {}
+    await chrome.runtime.sendMessage({ type: "context-selection", text: selectedText });
+  } catch (error) {
+    // Side panel may not have listeners yet; ignore.
+  }
 });
