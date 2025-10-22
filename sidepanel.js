@@ -27,24 +27,13 @@ const DEFAULT_TEMPLATES = [
   }
 ];
 
-const DEFAULT_PROFILES = [
-  {
-    id: "profile-general",
-    label: "General",
-    model: "llama3",
-    systemPrompt: "You are a helpful assistant."
-  },
-  {
-    id: "profile-creative",
-    label: "Creative",
-    model: "llama3:8b",
-    systemPrompt: "You are a creative brainstorming partner who thinks laterally."
-  }
-];
+const DEFAULT_PROFILES = [];
+const AUTO_PROFILE_PREFIX = "profile-model-";
 
 let conversation = [];
 let templates = [];
 let profiles = [];
+let availableModels = [];
 let currentProfileId = null;
 
 init();
@@ -55,7 +44,7 @@ async function init() {
   renderProfiles();
   renderConversation();
   attachEventListeners();
-  checkConnectionStatus();
+  await checkConnectionStatus();
   if (!promptInput.value) {
     promptInput.focus();
   }
@@ -96,7 +85,8 @@ async function loadState() {
       ? storedProfiles
       : DEFAULT_PROFILES;
 
-    currentProfileId = profiles.some(profile => profile.id === storedProfileId)
+    const isAutoProfileId = typeof storedProfileId === "string" && storedProfileId.startsWith(AUTO_PROFILE_PREFIX);
+    currentProfileId = isAutoProfileId || profiles.some(profile => profile.id === storedProfileId)
       ? storedProfileId
       : profiles[0]?.id ?? null;
 
@@ -170,21 +160,46 @@ function renderTemplates() {
 }
 
 function renderProfiles() {
+  const allProfiles = getAllProfiles();
   modelSelect.innerHTML = "";
-  profiles.forEach(profile => {
+
+  allProfiles.forEach(profile => {
     const option = document.createElement("option");
     option.value = profile.id;
-    option.textContent = `${profile.label} · ${profile.model}`;
+    const displayLabel = profile.label && profile.label !== profile.model
+      ? `${profile.label} · ${profile.model}`
+      : profile.model;
+    option.textContent = displayLabel;
     modelSelect.append(option);
   });
 
-  if (profiles.length) {
-    modelSelect.value = currentProfileId ?? profiles[0].id;
+  if (!allProfiles.length) {
+    modelSelect.disabled = true;
+    modelSelect.value = "";
+    currentProfileId = null;
+    return;
   }
+
+  modelSelect.disabled = false;
+
+  const nextProfileId = allProfiles.some(profile => profile.id === currentProfileId)
+    ? currentProfileId
+    : allProfiles[0].id;
+
+  if (currentProfileId !== nextProfileId) {
+    currentProfileId = nextProfileId;
+    saveProfiles();
+  }
+
+  modelSelect.value = currentProfileId;
 }
 
 function handleProfileChange() {
-  currentProfileId = modelSelect.value;
+  const selectedId = modelSelect.value;
+  if (!getAllProfiles().some(profile => profile.id === selectedId)) {
+    return;
+  }
+  currentProfileId = selectedId;
   saveProfiles();
 }
 
@@ -267,19 +282,54 @@ function handleManageProfiles() {
     }
     if (confirm(`Delete profile "${currentProfile.label}"?`)) {
       profiles = profiles.filter(profile => profile.id !== currentProfileId);
-      currentProfileId = profiles[0]?.id ?? null;
+      currentProfileId = null;
       renderProfiles();
       saveProfiles();
     }
   }
 }
 
+function getAutoProfiles() {
+  return availableModels.map(model => ({
+    id: `${AUTO_PROFILE_PREFIX}${model}`,
+    label: model,
+    model,
+    systemPrompt: ""
+  }));
+}
+
+function getAllProfiles() {
+  return [...getAutoProfiles(), ...profiles];
+}
+
+function updateAvailableModels(models) {
+  const normalized = Array.isArray(models)
+    ? [...new Set(models
+        .map(model => (typeof model === "string" ? model.trim() : ""))
+        .filter(Boolean))]
+    : [];
+  const hasChanged = normalized.length !== availableModels.length || normalized.some((model, index) => model !== availableModels[index]);
+  if (!hasChanged) {
+    return;
+  }
+  availableModels = normalized;
+  renderProfiles();
+}
+
 function getCurrentProfile() {
-  return profiles.find(profile => profile.id === currentProfileId) ?? profiles[0] ?? {
+  const allProfiles = getAllProfiles();
+  const matched = allProfiles.find(profile => profile.id === currentProfileId);
+  if (matched) {
+    return matched;
+  }
+  if (allProfiles.length) {
+    return allProfiles[0];
+  }
+  return {
     id: "profile-fallback",
     label: "Fallback",
-    model: "llama3",
-    systemPrompt: "You are a helpful assistant."
+    model: "",
+    systemPrompt: ""
   };
 }
 
@@ -340,6 +390,9 @@ function updateMessage(index, content) {
 }
 
 async function queryOllama(prompt, profile, assistantIndex) {
+  if (!profile?.model) {
+    throw new Error("No model selected.");
+  }
   const messages = [];
   if (profile.systemPrompt) {
     messages.push({ role: "system", content: profile.systemPrompt });
@@ -398,13 +451,32 @@ async function checkConnectionStatus() {
       method: "GET",
       signal: AbortSignal.timeout(3000)
     });
-    if (response.ok) {
-      updateConnectionStatus("connected");
-    } else {
+    if (!response.ok) {
+      updateAvailableModels([]);
       updateConnectionStatus("error");
+      return;
     }
+
+    const payload = await response.json().catch(() => null);
+    const models = Array.isArray(payload?.models)
+      ? payload.models
+          .map(item => {
+            if (typeof item === "string") {
+              return item;
+            }
+            if (item && typeof item.name === "string") {
+              return item.name;
+            }
+            return "";
+          })
+          .filter(Boolean)
+      : [];
+
+    updateAvailableModels(models);
+    updateConnectionStatus("connected");
   } catch (error) {
     console.error("Connection check failed", error);
+    updateAvailableModels([]);
     updateConnectionStatus("error");
   }
 }
