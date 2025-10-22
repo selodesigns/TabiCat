@@ -122,11 +122,99 @@ function appendMessageElement(role, content) {
 
   const contentEl = document.createElement("div");
   contentEl.className = "message__content";
-  contentEl.textContent = content;
+  setMessageContent(contentEl, content);
 
   wrapper.append(roleEl, contentEl);
   conversationEl.append(wrapper);
   conversationEl.scrollTop = conversationEl.scrollHeight;
+}
+
+function setMessageContent(element, content) {
+  element.textContent = "";
+  element.append(renderFormattedContent(content));
+}
+
+function renderFormattedContent(content) {
+  const fragment = document.createDocumentFragment();
+  const lines = typeof content === "string" ? content.split(/\r?\n/) : [];
+  let list = null;
+  let listType = null;
+  const paragraphBuffer = [];
+
+  const flushList = () => {
+    if (list) {
+      fragment.append(list);
+      list = null;
+      listType = null;
+    }
+  };
+
+  const flushParagraph = () => {
+    if (paragraphBuffer.length) {
+      const paragraph = document.createElement("p");
+      paragraph.innerHTML = applyInlineFormatting(paragraphBuffer.join(" "));
+      fragment.append(paragraph);
+      paragraphBuffer.length = 0;
+    }
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      flushParagraph();
+      flushList();
+      continue;
+    }
+
+    const orderedMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (orderedMatch) {
+      flushParagraph();
+      if (listType !== "ol") {
+        flushList();
+        list = document.createElement("ol");
+        listType = "ol";
+      }
+      const item = document.createElement("li");
+      item.innerHTML = applyInlineFormatting(orderedMatch[2]);
+      list.append(item);
+      continue;
+    }
+
+    const unorderedMatch = trimmed.match(/^[-*]\s+(.*)$/);
+    if (unorderedMatch) {
+      flushParagraph();
+      if (listType !== "ul") {
+        flushList();
+        list = document.createElement("ul");
+        listType = "ul";
+      }
+      const item = document.createElement("li");
+      item.innerHTML = applyInlineFormatting(unorderedMatch[1]);
+      list.append(item);
+      continue;
+    }
+
+    paragraphBuffer.push(trimmed);
+  }
+
+  flushParagraph();
+  flushList();
+
+  if (!fragment.childNodes.length) {
+    fragment.append(document.createTextNode(typeof content === "string" ? content : ""));
+  }
+
+  return fragment;
+}
+
+function applyInlineFormatting(text) {
+  const escaped = String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return escaped
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>");
 }
 
 function renderTemplates() {
@@ -474,7 +562,7 @@ function updateMessage(index, content) {
   if (target) {
     const contentEl = target.querySelector(".message__content");
     if (contentEl) {
-      contentEl.textContent = content;
+      setMessageContent(contentEl, content);
     }
   } else {
     renderConversation();
