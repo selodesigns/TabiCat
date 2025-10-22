@@ -24,7 +24,10 @@
     "default_icon": {
       "16": "tabicat-icon-16.png",
       "32": "tabicat-icon-32.png",
-      "48": "tabicat-icon-48.png"
+      "48": "tabicat-icon-48.png",
+      "64": "tabicat-icon-64.png",
+      "128": "tabicat-icon-128.png",
+      "256": "tabicat-icon-256.png"
     }
   },
   "side_panel": {
@@ -34,6 +37,8 @@
     "16": "tabicat-icon-16.png",
     "32": "tabicat-icon-32.png",
     "48": "tabicat-icon-48.png",
-    "128": "tabicat-icon.png"
+    "64": "tabicat-icon-64.png",
+    "128": "tabicat-icon-128.png",
+    "256": "tabicat-icon-256.png"
   }
 }
