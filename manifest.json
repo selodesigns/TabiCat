@@ -27,6 +27,9 @@
     "default_path": "sidepanel.html"
   },
   "icons": {
+    "16": "tabicat-icon.png",
+    "32": "tabicat-icon.png",
+    "48": "tabicat-icon.png",
     "128": "tabicat-icon.png"
   }
 }
